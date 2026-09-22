@@ -14,7 +14,14 @@ st.set_page_config(
     layout="wide"
 )
 
+# ---------------- LOAD CUSTOM CSS ----------------
 
+with open("style.css") as f:
+    st.markdown(
+        f"<style>{f.read()}</style>",
+        unsafe_allow_html=True
+    )
+    
 # ---------------- MODEL ----------------
 
 @st.cache_resource
@@ -590,15 +597,23 @@ if section == "Quiz":
 
     for i, question in enumerate(quiz_questions, start=1):
 
-        st.write(f"### Question {i}")
+        with st.container(border=True):
 
-        st.write(question["question"])
+            st.markdown(
+                f'<div class="quiz-question-label">Question {i:02d}</div>',
+                unsafe_allow_html=True
+            )
 
-        st.radio(
-            "Select your answer:",
-            question["options"],
-            key=f"quiz_{i}"
-        )
+            st.markdown(
+                f'<div class="quiz-question-text">{question["question"]}</div>',
+                unsafe_allow_html=True
+            )
+
+            st.radio(
+                "Select your answer:",
+                question["options"],
+                key=f"quiz_{i}"
+            )
 
 
     # ---------------- SUBMIT ----------------
@@ -621,7 +636,8 @@ if section == "Quiz":
         st.session_state.quiz_score = score
 
         st.success(
-            f"Quiz submitted! Your score is {score}/10."
+            f"Quiz submitted! Your score is {score}/10.",
+            icon=None
         )
 
 
@@ -637,18 +653,31 @@ if section == "Quiz":
 
             if selected_answer == question["answer"]:
 
-                st.write(
-                    f"✅ **Question {i}: Correct**"
+                st.markdown(
+                    f"""
+                    <div class="feedback-row feedback-correct">
+                        <span class="feedback-number">{i:02d}</span>
+                        <span class="feedback-question">Question {i}</span>
+                        <span class="feedback-status">Correct</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
 
             else:
 
-                st.write(
-                    f"❌ **Question {i}: Incorrect**"
-                )
-
-                st.write(
-                    f"Correct answer: **{question['answer']}**"
+                st.markdown(
+                    f"""
+                    <div class="feedback-row feedback-review">
+                        <span class="feedback-number">{i:02d}</span>
+                        <span class="feedback-question">Question {i}</span>
+                        <span class="feedback-status">Review</span>
+                    </div>
+                    <div class="feedback-answer">
+                        Correct answer: <strong>{question['answer']}</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
 
 # ---------------- REPORT GENERATION ----------------
@@ -921,13 +950,91 @@ if section == "Certificate":
 
         else:
 
+            from fpdf import FPDF
+
+            pdf = FPDF(
+                orientation="L",
+                unit="mm",
+                format="A4"
+            )
+            pdf.set_margins(18, 16, 18)
+            pdf.add_page()
+
+            page_width = 297
+            page_height = 210
+
+            pdf.set_draw_color(35, 55, 70)
+            pdf.set_line_width(1.2)
+            pdf.rect(10, 10, page_width - 20, page_height - 20)
+
+            pdf.set_draw_color(173, 123, 53)
+            pdf.set_line_width(0.5)
+            pdf.rect(15, 15, page_width - 30, page_height - 30)
+
+            pdf.set_text_color(35, 55, 70)
+            pdf.set_font("Arial", "B", 13)
+            pdf.cell(0, 12, "VIRTUAL LABORATORY", align="C", ln=True)
+
+            pdf.set_text_color(173, 123, 53)
+            pdf.set_font("Times", "B", 28)
+            pdf.cell(0, 18, "CERTIFICATE OF COMPLETION", align="C", ln=True)
+
+            pdf.set_draw_color(173, 123, 53)
+            pdf.line(106, 58, 191, 58)
+            pdf.ln(10)
+
+            pdf.set_text_color(78, 85, 90)
+            pdf.set_font("Arial", "", 12)
+            pdf.cell(0, 9, "This certificate is proudly presented to", align="C", ln=True)
+            pdf.ln(3)
+
+            pdf.set_text_color(35, 55, 70)
+            pdf.set_font("Times", "B", 27)
+            pdf.cell(0, 18, certificate_name.strip(), align="C", ln=True)
+
+            pdf.set_draw_color(173, 123, 53)
+            pdf.line(82, 100, 215, 100)
+            pdf.ln(9)
+
+            pdf.set_text_color(78, 85, 90)
+            pdf.set_font("Arial", "", 12)
+            pdf.cell(0, 8, "for successfully completing the virtual laboratory experiment", align="C", ln=True)
+
+            pdf.set_text_color(35, 55, 70)
+            pdf.set_font("Arial", "B", 16)
+            pdf.cell(0, 12, "Dense Embedding-Based Semantic Search", align="C", ln=True)
+
+            pdf.set_text_color(78, 85, 90)
+            pdf.set_font("Arial", "", 11)
+            pdf.multi_cell(
+                0,
+                7,
+                "The learner demonstrated an understanding of dense embeddings, "
+                "cosine similarity, semantic search, and top-k retrieval.",
+                align="C"
+            )
+
+            pdf.set_y(166)
+            pdf.set_draw_color(78, 85, 90)
+            pdf.line(48, 178, 105, 178)
+            pdf.line(192, 178, 249, 178)
+            pdf.set_font("Arial", "", 9)
+            pdf.set_text_color(78, 85, 90)
+            pdf.set_xy(48, 180)
+            pdf.cell(57, 6, "Virtual Laboratory", align="C")
+            pdf.set_xy(192, 180)
+            pdf.cell(57, 6, "Instructor", align="C")
+
+            certificate_pdf = bytes(pdf.output())
+
             st.success(
-                f"Certificate generated successfully for {certificate_name}!"
+                f"Certificate generated successfully for {certificate_name}!",
+                icon=None
             )
 
             st.markdown(
                 f"""
-                ### 🏆 Certificate of Completion
+                ### Certificate of Completion
 
                 This is to certify that
 
@@ -940,6 +1047,13 @@ if section == "Certificate":
                 and demonstrated an understanding of dense embeddings,
                 cosine similarity, semantic search, and top-k retrieval.
                 """
+            )
+
+            st.download_button(
+                label="Download Certificate PDF",
+                data=certificate_pdf,
+                file_name="virtual_lab_certificate.pdf",
+                mime="application/pdf"
             )
 
 

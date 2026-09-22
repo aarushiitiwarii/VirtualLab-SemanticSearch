@@ -1,0 +1,657 @@
+/* =========================================================
+   VIRTUAL LAB - SEMANTIC SEARCH LABORATORY
+   ========================================================= */
+
+
+/* =========================================================
+   FONTS
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap');
+
+
+/* =========================================================
+   COLOR SYSTEM
+   ========================================================= */
+
+:root {
+    --ink: #20262d;
+    --muted: #6f7478;
+    --navy: #233746;
+    --brass: #ad7b35;
+
+    --paper: #fffdfa;
+    --canvas: #f5f5f3;
+    --line: #ded8cd;
+
+    --shadow: 0 8px 24px rgba(35, 55, 70, 0.07);
+}
+
+
+/* =========================================================
+   GLOBAL TYPOGRAPHY
+   ========================================================= */
+
+html,
+body,
+[class*="css"] {
+    font-family: "Libre Baskerville", serif;
+    color: var(--ink);
+}
+
+body {
+    background: var(--canvas);
+}
+
+.stApp {
+    background: var(--canvas);
+}
+
+
+/* =========================================================
+   MAIN CONTENT AREA
+   ========================================================= */
+
+.main .block-container {
+    max-width: 1280px;
+    padding: 2.5rem 2.5rem 5rem;
+}
+
+
+/* =========================================================
+   HEADINGS
+   ========================================================= */
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: "Libre Baskerville", serif;
+    color: var(--navy);
+    letter-spacing: 0;
+}
+
+h1 {
+    font-size: clamp(2rem, 4vw, 3.1rem) !important;
+    line-height: 1.15 !important;
+    margin-bottom: 0.6rem !important;
+    max-width: 820px;
+}
+
+h2 {
+    font-size: 1.8rem !important;
+    margin-top: 2rem !important;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid var(--brass);
+}
+
+h3 {
+    font-size: 1.25rem !important;
+    margin-top: 1.7rem !important;
+}
+
+p,
+li {
+    color: #4e555a;
+    line-height: 1.7;
+}
+
+[data-testid="stMarkdownContainer"],
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li,
+[data-testid="stMarkdownContainer"] strong,
+[data-testid="stMarkdownContainer"] span {
+    font-family: "Libre Baskerville", serif !important;
+}
+
+button,
+input,
+textarea,
+select,
+[data-testid="stSidebar"] label,
+[data-testid="stRadio"] label,
+[data-testid="stSlider"] label {
+    font-family: "Libre Baskerville", serif;
+}
+
+
+/* =========================================================
+   CUSTOM PAGE TITLE
+   ========================================================= */
+
+.main-title {
+    font-family: "Libre Baskerville", serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 0;
+}
+
+.subtitle {
+    font-family: "Libre Baskerville", serif;
+    color: var(--brass);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+    text-transform: uppercase;
+}
+
+.section-title,
+.sidebar-title {
+    font-family: "Libre Baskerville", serif;
+    color: var(--navy);
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+[data-testid="stSidebar"] {
+    background: var(--navy);
+    border-right: 1px solid #304a5b;
+    width: 500px;
+    min-width: 300px;
+}
+
+[data-testid="stSidebar"] > div:first-child {
+    padding: 0.35rem 1rem 1.2rem;
+}
+
+
+/* Sidebar text */
+
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
+    color: #f8f5ee;
+}
+
+
+/* Sidebar headings */
+
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {
+    font-family: "Libre Baskerville", serif;
+}
+
+[data-testid="stSidebar"] h1 {
+    font-size: 1.2rem !important;
+    line-height: 1.35;
+    margin-top: 0 !important;
+}
+
+
+/* "SELECT A SECTION:" */
+
+[data-testid="stSidebar"] .stRadio > label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    opacity: 0.65;
+    text-transform: uppercase;
+}
+
+
+/* Navigation container */
+
+[data-testid="stSidebar"] [role="radiogroup"] {
+    gap: 0.18rem;
+}
+
+
+/* Navigation item */
+
+[data-testid="stSidebar"] [role="radiogroup"] label {
+    border: 0 !important;
+    border-left: 3px solid transparent !important;
+    border-radius: 0 !important;
+    align-items: center;
+
+    font-family: "Libre Baskerville", serif;
+    font-size: 1rem;
+
+    padding: 0.72rem 0.9rem !important;
+
+    position: relative;
+
+    background: transparent !important;
+
+    transition:
+        background 160ms ease,
+        border-color 160ms ease;
+}
+
+
+/* =========================================================
+   REMOVE STREAMLIT RADIO CIRCLE
+   ========================================================= */
+
+/* Hide radio input */
+
+[data-testid="stSidebar"] input[type="radio"] {
+    display: none !important;
+}
+
+
+/* Hide BaseWeb radio circle */
+
+[data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child {
+    display: none !important;
+}
+
+
+/* Hide any nested radio indicator */
+
+[data-testid="stSidebar"] [data-baseweb="radio"] > div > div:first-child {
+    display: none !important;
+}
+
+
+/* Remove possible pseudo-elements */
+
+[data-testid="stSidebar"] [data-baseweb="radio"]::before,
+[data-testid="stSidebar"] [data-baseweb="radio"]::after,
+[data-testid="stSidebar"] [role="radio"]::before,
+[data-testid="stSidebar"] [role="radio"]::after {
+    display: none !important;
+    content: none !important;
+}
+
+
+/* =========================================================
+   SIDEBAR HOVER
+   ========================================================= */
+
+[data-testid="stSidebar"] [role="radiogroup"] label:hover {
+    background: rgba(255, 253, 250, 0.06) !important;
+    border-left-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+
+/* =========================================================
+   SIDEBAR SELECTED ITEM
+   ========================================================= */
+
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
+    background: rgba(255, 253, 250, 0.10) !important;
+    border-left-color: var(--brass) !important;
+    color: #fffdfa !important;
+}
+
+
+/* Selected item's text */
+
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) p,
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) span {
+    color: #fffdfa !important;
+}
+
+
+/* =========================================================
+   REUSABLE CARDS
+   ========================================================= */
+
+.info-card {
+    padding: 1.25rem 1.4rem;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--brass);
+    border-radius: 4px;
+    background: var(--paper);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.1rem;
+}
+
+
+/* =========================================================
+   TABLES AND CHARTS
+   ========================================================= */
+
+[data-testid="stDataFrame"],
+[data-testid="stPlotlyChart"] {
+    border-radius: 4px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    padding: 0.35rem;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.stButton > button,
+button[kind="primary"],
+[data-testid="stDownloadButton"] button {
+    min-height: 2.7rem;
+    border: 1px solid var(--navy);
+    border-radius: 4px;
+    background: var(--navy);
+    color: #ffffff;
+
+    font-family: "Libre Baskerville", serif;
+    font-weight: 700;
+
+    box-shadow: none;
+
+    transition:
+        background 160ms ease,
+        color 160ms ease,
+        border-color 160ms ease;
+}
+
+
+/* Button hover */
+
+.stButton > button:hover,
+button[kind="primary"]:hover,
+[data-testid="stDownloadButton"] button:hover {
+    background: var(--brass);
+    border-color: var(--brass);
+    color: #ffffff;
+}
+
+.stButton > button p,
+.stButton > button span,
+button[kind="primary"] p,
+button[kind="primary"] span,
+[data-testid="stDownloadButton"] button p,
+[data-testid="stDownloadButton"] button span,
+.stButton > button:focus,
+.stButton > button:active,
+button[kind="primary"]:focus,
+button[kind="primary"]:active,
+[data-testid="stDownloadButton"] button:focus,
+[data-testid="stDownloadButton"] button:active {
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   TEXT INPUT
+   ========================================================= */
+
+[data-testid="stTextInput"] input {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 2.8rem;
+}
+
+
+/* Text input focus */
+
+[data-testid="stTextInput"] input:focus {
+    border-color: var(--brass);
+    box-shadow: 0 0 0 2px rgba(173, 123, 53, 0.12);
+}
+
+
+/* =========================================================
+   SLIDER
+   ========================================================= */
+
+[data-testid="stSlider"] [role="slider"] {
+    background: var(--brass);
+    border-color: var(--brass);
+}
+
+
+/* =========================================================
+   ALERTS
+   ========================================================= */
+
+[data-testid="stAlert"] {
+    border: 0;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(35, 55, 70, 0.06);
+    margin: 0.7rem 0 0.35rem;
+    padding: 0.7rem 1rem;
+}
+
+[data-testid="stAlert"] p {
+    font-family: "Libre Baskerville", serif;
+    color: var(--ink);
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+[data-testid="stAlert"] svg {
+    display: none;
+}
+
+
+/* =========================================================
+   QUIZ QUESTIONS
+   ========================================================= */
+
+[data-testid="stVerticalBlockBorderWrapper"] {
+    margin: 1rem 0;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: rgba(255, 253, 250, 0.72);
+    box-shadow: var(--shadow);
+}
+
+.quiz-question-label {
+    margin-bottom: 0.65rem;
+    color: var(--brass);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.quiz-question-text {
+    margin-bottom: 0.45rem;
+    color: var(--navy);
+    font-family: "Libre Baskerville", serif;
+    font-size: 1.08rem;
+    line-height: 1.55;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stRadio"] > label {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] [data-baseweb="radio"] {
+    min-height: 2.2rem;
+    margin: 0.15rem 0;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    transition: background 160ms ease, border-color 160ms ease;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] [data-baseweb="radio"]:hover {
+    border-color: var(--line);
+    background: #f4efe6;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] [data-baseweb="radio"] p {
+    color: var(--ink);
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   QUIZ FEEDBACK
+   ========================================================= */
+
+.feedback-row {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-height: 3.1rem;
+    margin-top: 0.55rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--brass);
+    border-radius: 4px;
+    background: var(--paper);
+}
+
+.feedback-number {
+    color: var(--brass);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    min-width: 1.7rem;
+}
+
+.feedback-question {
+    font-family: "Libre Baskerville", serif;
+    color: var(--navy);
+    flex: 1;
+    font-weight: 600;
+}
+
+.feedback-status {
+    border-radius: 3px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.35rem 0.55rem;
+    text-transform: uppercase;
+}
+
+.feedback-correct {
+    border-left-color: #587b68;
+}
+
+.feedback-correct .feedback-status {
+    background: #e8f0ea;
+    color: #356148;
+}
+
+.feedback-review {
+    border-left-color: #b47732;
+}
+
+.feedback-review .feedback-status {
+    background: #f5ead8;
+    color: #8a5b1f;
+}
+
+.feedback-answer {
+    margin: 0 0 0.65rem 3.55rem;
+    padding: 0.55rem 0.85rem;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.feedback-answer strong {
+    color: var(--navy);
+}
+
+
+/* =========================================================
+   DIVIDERS
+   ========================================================= */
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 1.7rem 0;
+}
+
+
+/* =========================================================
+   TEXT EMPHASIS
+   ========================================================= */
+
+strong {
+    font-family: "Libre Baskerville", serif;
+    color: var(--navy);
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   INLINE CODE
+   ========================================================= */
+
+[data-testid="stMarkdownContainer"] code {
+    border-radius: 5px;
+    background: #eee9df;
+    color: var(--navy);
+    padding: 0.15rem 0.35rem;
+}
+
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+    .main .block-container {
+        padding: 2rem 1rem 3.5rem;
+    }
+
+    h2 {
+        font-size: 1.65rem !important;
+    }
+
+    h3 {
+        font-size: 1.2rem !important;
+    }
+}
+
+/* =========================================================
+   FINAL RADIO CIRCLE REMOVAL
+   ========================================================= */
+
+/* Hide Streamlit radio indicator elements */
+[data-testid="stSidebar"] [data-baseweb="radio"] svg {
+    display: none !important;
+}
+
+[data-testid="stSidebar"] [data-baseweb="radio"] span {
+    display: none !important;
+}
+
+/* Hide the radio indicator container */
+[data-testid="stSidebar"] [data-baseweb="radio"] > div {
+    display: none !important;
+}
+
+/* Keep the navigation text visible */
+[data-testid="stSidebar"] [data-baseweb="radio"] {
+    display: block !important;
+}
+
+/* Remove any remaining radio visuals */
+[data-testid="stSidebar"] [role="radio"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove pseudo-elements from radio controls */
+[data-testid="stSidebar"] [role="radio"]::before,
+[data-testid="stSidebar"] [role="radio"]::after {
+    display: none !important;
+    content: none !important;
+}
