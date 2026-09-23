@@ -2,6 +2,13 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import re
+import os
+from io import BytesIO
+import numpy as np
+
+os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
+os.environ.setdefault("USE_TF", "0")
+
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -29,26 +36,10 @@ def load_model():
     return SentenceTransformer("all-MiniLM-L6-v2")
 
 
-model = load_model()
-
-
-# ---------------- DOCUMENT COLLECTION ----------------
-
-documents = [
-    "Artificial intelligence enables computers to perform tasks that normally require human intelligence.",
-    "Machine learning allows computers to learn patterns from data and make predictions.",
-    "Deep learning uses neural networks with multiple layers to learn complex patterns.",
-    "Natural language processing enables computers to understand and process human language.",
-    "Semantic search retrieves information based on meaning rather than exact keyword matches.",
-    "Dense embeddings represent text as numerical vectors that capture semantic meaning.",
-    "Cosine similarity measures how similar two vectors are based on their orientation.",
-    "Information retrieval systems help users find relevant documents from large collections.",
-    "Database systems store and organize information so that it can be efficiently retrieved.",
-    "Computer vision enables machines to analyze and understand images and visual information."
-]
-
-
 # ---------------- SESSION STATE ----------------
+
+if "documents" not in st.session_state:
+    st.session_state.documents = []
 
 if "document_embeddings" not in st.session_state:
     st.session_state.document_embeddings = None
@@ -58,6 +49,8 @@ if "search_results" not in st.session_state:
 
 if "last_query" not in st.session_state:
     st.session_state.last_query = ""
+
+documents = st.session_state.documents
 
 
 # ---------------- KEYWORD SEARCH ----------------
@@ -89,6 +82,61 @@ def keyword_search(query, documents, top_k):
     )
 
     return ranked_indices[:top_k], scores
+
+
+def extract_uploaded_text(uploaded_file):
+
+    file_name = uploaded_file.name.lower()
+    file_bytes = uploaded_file.getvalue()
+
+    if file_name.endswith(".pdf"):
+
+        try:
+            from pypdf import PdfReader
+
+            reader = PdfReader(BytesIO(file_bytes))
+            return "\n".join(
+                page.extract_text() or ""
+                for page in reader.pages
+            ).strip()
+
+        except ImportError:
+            raise ValueError(
+                "PDF support requires the pypdf package. Install it with: pip install pypdf"
+            )
+
+    if file_name.endswith((".jpg", ".jpeg", ".png")):
+
+        try:
+            from PIL import Image
+            pytesseract = __import__("pytesseract")
+
+            image = Image.open(BytesIO(file_bytes))
+            return pytesseract.image_to_string(image).strip()
+
+        except ImportError:
+            raise ValueError(
+                "Image OCR requires Pillow and pytesseract. Install them with: "
+                "pip install Pillow pytesseract"
+            )
+
+    if file_name.endswith(".docx"):
+
+        try:
+            from docx import Document
+
+            document = Document(BytesIO(file_bytes))
+            return "\n".join(
+                paragraph.text
+                for paragraph in document.paragraphs
+            ).strip()
+
+        except ImportError:
+            raise ValueError(
+                "DOCX support requires python-docx. Install it with: pip install python-docx"
+            )
+
+    return file_bytes.decode("utf-8", errors="ignore").strip()
 
 
 # ---------------- TITLE ----------------
@@ -127,17 +175,62 @@ if section == "Purpose":
 
     st.write(
         "To develop a semantic search system using dense vector embeddings "
-        "to retrieve documents that are conceptually similar to a user's query."
+        "to retrieve documents that are conceptually similar to a user's query, "
+        "even when the query and document use different words."
+    )
+
+    st.subheader("Experiment Background")
+
+    st.write(
+        "Traditional keyword search looks for exact words shared by a query and a "
+        "document. This approach is useful for precise terms, but it may fail when "
+        "the user uses a synonym, changes the word order, or describes an idea in "
+        "different language. Semantic search addresses this limitation by representing "
+        "both queries and documents as dense numerical vectors. Their meanings can then "
+        "be compared using a mathematical similarity measure."
+    )
+
+    st.write(
+        "This virtual experiment demonstrates the complete retrieval process on a small "
+        "collection of documents related to artificial intelligence and information "
+        "retrieval. It also compares the embedding-based result with a simple keyword "
+        "baseline, allowing the learner to observe when meaning-based retrieval produces "
+        "a different ranking from exact word matching."
     )
 
     st.subheader("Objectives")
 
     st.markdown("""
-    - Generate dense vector embeddings for documents and queries.
-    - Measure similarity between the query and documents.
-    - Retrieve the most semantically relevant documents.
+    - Understand why exact keyword matching may miss conceptually related information.
+    - Generate dense vector embeddings for the document collection and user query.
+    - Interpret a fixed-length vector as a learned numerical representation of text.
+    - Calculate cosine similarity between the query vector and document vectors.
+    - Rank documents according to their similarity scores.
+    - Retrieve the top-k documents most relevant to the query.
     - Compare semantic search with traditional keyword-based search.
+    - Explain how the embedding model and document collection affect retrieval quality.
     """)
+
+    st.subheader("Learning Outcomes")
+
+    st.write(
+        "After completing the experiment, the learner should be able to describe the "
+        "role of an embedding model in information retrieval, write and explain the "
+        "cosine-similarity formula, interpret a ranked search result, and distinguish "
+        "semantic similarity from simple word overlap. The learner should also be able "
+        "to identify why a high similarity score indicates relevance according to the "
+        "model, but does not by itself guarantee that two texts are identical or correct."
+    )
+
+    st.subheader("Expected Outcome")
+
+    st.write(
+        "The simulation should return a ranked list of documents for the entered query. "
+        "The highest-ranked document is the one with the greatest cosine similarity to "
+        "the query embedding. The comparison table should help demonstrate that semantic "
+        "search can find related content even when fewer exact query words appear in the "
+        "document."
+    )
 
 
 # ---------------- THEORY ----------------
@@ -147,30 +240,155 @@ if section == "Theory":
     st.subheader("1. What is Semantic Search?")
 
     st.write(
-        "Semantic search retrieves documents based on their meaning rather than "
-        "only matching the exact words present in the query."
+        "Semantic search retrieves documents according to the meaning and context "
+        "of the text rather than relying only on exact word matches. For example, "
+        "a query about computers understanding language may retrieve a document "
+        "about natural language processing even when the words in the query and "
+        "document are not identical. This makes semantic search useful when users "
+        "express the same idea in different ways."
+    )
+
+    st.write(
+        "In this experiment, the searchable collection contains short documents. "
+        "The same procedure can be applied to lecture notes, webpages, support "
+        "articles, or scientific papers. Each document is converted into a vector "
+        "before searching, so the search operation compares numerical representations "
+        "of meaning instead of comparing raw strings alone."
     )
 
     st.subheader("2. Dense Embeddings")
 
     st.write(
-        "A dense embedding represents a document or query as a numerical vector. "
-        "Texts with similar meanings tend to have similar vector representations."
+        "A dense embedding represents a document or query as a fixed-length numerical "
+        "vector. The model used here, all-MiniLM-L6-v2, maps each text into a "
+        "384-dimensional vector. Every coordinate contributes some learned information "
+        "about the text, such as its topic, context, or relationship to other words. "
+        "The coordinates are not individual word counts; they are learned features."
+    )
+
+    st.latex(r"d_i = f(\text{document}_i), \qquad q = f(\text{query})")
+
+    st.write(
+        "Here, f represents the embedding model, d_i is the vector for document i, "
+        "and q is the vector for the user's query. Because the same model encodes "
+        "both documents and queries, their vectors can be compared in the same vector "
+        "space. Documents that are close to the query in this space are treated as "
+        "more relevant."
     )
 
     st.subheader("3. Similarity Measurement")
 
     st.write(
-        "The similarity between the query vector and document vectors is measured "
-        "using cosine similarity. A higher similarity score indicates greater "
-        "semantic similarity."
+        "The similarity between the query vector and each document vector is measured "
+        "using cosine similarity. Cosine similarity measures the angle between two "
+        "vectors, so it focuses on their direction and is less affected by the "
+        "absolute length of the vectors. A score close to 1 indicates strong alignment, "
+        "a score near 0 indicates weak alignment, and a negative score indicates "
+        "opposing directions."
+    )
+
+    st.latex(
+        r"\operatorname{cosine\_similarity}(q,d_i) "
+        r"= \frac{q \cdot d_i}{\|q\|\,\|d_i\|}"
+    )
+
+    st.write(
+        "The numerator q · d_i is the dot product. If q = (q_1, q_2, ..., q_n) "
+        "and d_i = (d_1, d_2, ..., d_n), the dot product is calculated by multiplying "
+        "corresponding coordinates and adding the results. The denominator normalizes "
+        "the result using the Euclidean length (L2 norm) of each vector."
+    )
+
+    st.latex(
+        r"q \cdot d_i = \sum_{j=1}^{n} q_jd_{ij}, \qquad "
+        r"\|q\| = \sqrt{\sum_{j=1}^{n}q_j^2}, \qquad "
+        r"\|d_i\| = \sqrt{\sum_{j=1}^{n}d_{ij}^2}"
+    )
+
+    st.subheader("Formula Summary")
+
+    st.write(
+        "The complete calculation can also be understood as a sequence of four "
+        "mathematical operations: encode the text, normalize the vectors, calculate "
+        "their alignment, and rank the documents by the resulting score."
+    )
+
+    st.latex(
+        r"\hat{q} = \frac{q}{\|q\|}, \qquad "
+        r"\hat{d}_i = \frac{d_i}{\|d_i\|}"
+    )
+
+    st.write(
+        "The hat symbol represents a normalized vector. After normalization, cosine "
+        "similarity is equivalent to the dot product of the normalized query and "
+        "document vectors."
+    )
+
+    st.latex(
+        r"\operatorname{score}_i = \hat{q} \cdot \hat{d}_i "
+        r"= \operatorname{cosine\_similarity}(q,d_i)"
+    )
+
+    st.latex(
+        r"\operatorname{ranking} = "
+        r"\operatorname{argsort}(\operatorname{score}_1, "
+        r"\operatorname{score}_2, \ldots, \operatorname{score}_m) "
+        r"\text{ in descending order}"
+    )
+
+    st.write(
+        "If there are m documents, the system calculates m scores and returns the "
+        "first k document indices from this descending ranking. This is the mathematical "
+        "meaning of top-k retrieval used in the simulation."
     )
 
     st.subheader("4. Retrieval")
 
     st.write(
-        "The system calculates similarity scores for the documents and ranks them. "
-        "The top-k documents with the highest scores are returned as the search results."
+        "After calculating one score for every document, the system sorts the scores "
+        "from highest to lowest. The top-k documents are returned, where k is selected "
+        "by the user in the Simulation section. The value of k controls how many results "
+        "are displayed, but it does not change the embedding or the similarity scores."
+    )
+
+    st.subheader("5. Complete Experimental Workflow")
+
+    st.markdown("""
+    1. Store the document collection.
+    2. Encode every document once to create dense document embeddings.
+    3. Encode the user's query with the same embedding model.
+    4. Compute cosine similarity between the query vector and every document vector.
+    5. Sort documents by decreasing similarity score.
+    6. Display the top-k results and compare them with keyword matching.
+    """)
+
+    st.subheader("6. Semantic Search Compared with Keyword Search")
+
+    st.write(
+        "The keyword baseline counts the distinct query words that also occur in each "
+        "document. Its simple score is therefore:"
+    )
+
+    st.latex(
+        r"\operatorname{keyword\_score}(q,d_i) "
+        r"= |\operatorname{words}(q) \cap \operatorname{words}(d_i)|"
+    )
+
+    st.write(
+        "Keyword matching is transparent and can be effective when exact terminology "
+        "matters, but it may miss synonyms and related concepts. Semantic search can "
+        "retrieve conceptually related text, although its result depends on the model, "
+        "the quality of the document collection, and the meaning captured by the embeddings."
+    )
+
+    st.subheader("7. Worked Calculation")
+
+    st.write(
+        "For one query and one document, the simulation substitutes the generated vector "
+        "values into the cosine formula. It first calculates the dot product, then the "
+        "two vector norms, and finally divides the numerator by the denominator. The "
+        "result is the score used for ranking. The Simulation section shows these actual "
+        "values for the documents selected in a search."
     )
 
     st.subheader("Basic Workflow")
@@ -203,6 +421,16 @@ if section == "Theory":
             f"**{term}:** {definition}"
         )
 
+    st.subheader("8. Limitations and Interpretation")
+
+    st.write(
+        "A high cosine score should be interpreted as strong similarity according to the "
+        "embedding model, not as proof that two documents are identical or factually "
+        "equivalent. Short texts may provide limited context, and a model can reflect "
+        "biases or gaps in the data used to train it. In a production system, results "
+        "should be evaluated with representative queries and human relevance judgments."
+    )
+
 
 # ---------------- SIMULATION ----------------
 
@@ -215,8 +443,108 @@ if section == "Simulation":
     st.subheader("Step 1: Document Collection")
 
     st.write(
-        "The following documents are used for the semantic search experiment:"
+        "Add one or more text documents to create the collection used in this experiment. "
+        "Each document should contain enough information to represent a meaningful topic "
+        "or idea."
     )
+
+    new_document = st.text_area(
+        "Enter a document:",
+        placeholder="Example: Natural language processing helps computers understand human language.",
+        height=110,
+        key="new_document"
+    )
+
+    uploaded_files = st.file_uploader(
+        "Or upload documents and images:",
+        type=[
+            "pdf",
+            "jpg",
+            "jpeg",
+            "png",
+            "txt",
+            "md",
+            "csv",
+            "json",
+            "html",
+            "docx"
+        ],
+        accept_multiple_files=True,
+        help="PDF and DOCX files use text extraction. JPG and PNG files use OCR when pytesseract is installed."
+    )
+
+    add_document, clear_documents = st.columns([1, 1])
+
+    with add_document:
+
+        if st.button("Add Document", use_container_width=True):
+
+            if not new_document.strip():
+
+                st.warning("Enter some text before adding a document.")
+
+            else:
+
+                st.session_state.documents.append(new_document.strip())
+                st.session_state.document_embeddings = None
+                st.session_state.search_results = None
+                st.success(
+                    f"Document D{len(st.session_state.documents)} added to the collection."
+                )
+                st.rerun()
+
+    if uploaded_files and st.button(
+        "Import Uploaded Files",
+        use_container_width=True
+    ):
+
+        imported_count = 0
+        import_errors = []
+
+        for uploaded_file in uploaded_files:
+
+            try:
+                extracted_text = extract_uploaded_text(uploaded_file)
+
+                if extracted_text:
+                    st.session_state.documents.append(extracted_text)
+                    imported_count += 1
+                else:
+                    import_errors.append(
+                        f"{uploaded_file.name}: no readable text was found"
+                    )
+
+            except ValueError as error:
+                import_errors.append(f"{uploaded_file.name}: {error}")
+
+        if imported_count:
+            st.session_state.document_embeddings = None
+            st.session_state.search_results = None
+            st.success(f"Imported {imported_count} file(s) into the collection.")
+
+        for import_error in import_errors:
+            st.warning(import_error)
+
+        if imported_count:
+            st.rerun()
+
+    with clear_documents:
+
+        if st.button("Clear Collection", use_container_width=True):
+
+            st.session_state.documents = []
+            st.session_state.document_embeddings = None
+            st.session_state.search_results = None
+            st.session_state.last_query = ""
+            st.rerun()
+
+    documents = st.session_state.documents
+
+    if not documents:
+
+        st.info(
+            "Your collection is empty. Add documents above before generating embeddings."
+        )
 
     for i, document in enumerate(documents, start=1):
 
@@ -228,11 +556,26 @@ if section == "Simulation":
     # STEP 2
     st.subheader("Step 2: Generate Dense Embeddings")
 
-    if st.button("Generate Document Embeddings"):
+    st.write(
+        "The embedding model converts every document into a 384-dimensional vector. "
+        "The vectors are not displayed in full because that would require showing 384 "
+        "numbers per document, but the calculation below uses every coordinate."
+    )
 
-        st.session_state.document_embeddings = model.encode(
-            documents
-        )
+    st.latex(
+        r"d_i = f(\text{document}_i), \qquad "
+        r"q = f(\text{query}), \qquad "
+        r"\operatorname{score}(q,d_i) = "
+        r"\frac{\sum_{j=1}^{384}q_jd_{ij}}{"
+        r"\sqrt{\sum_{j=1}^{384}q_j^2}\;"
+        r"\sqrt{\sum_{j=1}^{384}d_{ij}^2}}"
+    )
+
+    if st.button("Generate Document Embeddings", disabled=not documents):
+
+        with st.spinner("Loading the embedding model and generating vectors..."):
+            model = load_model()
+            st.session_state.document_embeddings = model.encode(documents)
 
         st.success(
             "Dense embeddings generated successfully!"
@@ -252,11 +595,13 @@ if section == "Simulation":
         placeholder="Example: How do computers understand human language?"
     )
 
+    max_results = max(1, min(5, len(documents)))
+
     top_k = st.slider(
         "Number of results to retrieve:",
         min_value=1,
-        max_value=5,
-        value=3
+        max_value=max_results,
+        value=min(3, max_results)
     )
 
 
@@ -271,6 +616,12 @@ if section == "Simulation":
                 "Please enter a search query."
             )
 
+        elif not documents:
+
+            st.warning(
+                "Please add at least one document before performing a search."
+            )
+
         elif st.session_state.document_embeddings is None:
 
             st.warning(
@@ -281,9 +632,9 @@ if section == "Simulation":
         else:
 
             # Generate query embedding
-            query_embedding = model.encode(
-                [query]
-            )
+            with st.spinner("Encoding the query and calculating similarities..."):
+                model = load_model()
+                query_embedding = model.encode([query])
 
 
             # Calculate cosine similarity
@@ -338,6 +689,64 @@ if section == "Simulation":
                 use_container_width=True,
                 hide_index=True
             )
+
+            # ---------------- FORMULA TRACE ----------------
+
+            st.subheader("Calculation Trace")
+
+            st.write(
+                "The following worked calculations use the actual query and document "
+                "embeddings generated in this search. The first five vector components "
+                "are shown as a readable sample, while the dot product, norms, and final "
+                "score are calculated using all 384 components."
+            )
+
+            st.latex(
+                r"\operatorname{cosine\_similarity}(q,d_i) "
+                r"= \frac{q \cdot d_i}{\|q\|\,\|d_i\|}"
+            )
+
+            query_vector = query_embedding[0]
+
+            for rank, index in enumerate(top_indices, start=1):
+
+                document_vector = st.session_state.document_embeddings[index]
+                dot_product = float(np.dot(query_vector, document_vector))
+                query_norm = float(np.linalg.norm(query_vector))
+                document_norm = float(np.linalg.norm(document_vector))
+                calculated_score = dot_product / (query_norm * document_norm)
+
+                with st.expander(f"Rank {rank}: D{index + 1} calculation"):
+
+                    st.write(f"**Document:** {documents[index]}")
+                    st.write(
+                        f"Query vector sample (first 5 of 384): "
+                        f"`{np.round(query_vector[:5], 4).tolist()}`"
+                    )
+                    st.write(
+                        f"Document vector sample (first 5 of 384): "
+                        f"`{np.round(document_vector[:5], 4).tolist()}`"
+                    )
+
+                    st.latex(
+                        rf"q \cdot d_{{{index + 1}}} "
+                        rf"= {dot_product:.6f}"
+                    )
+                    st.latex(
+                        rf"\|q\| = {query_norm:.6f}, \qquad "
+                        rf"\|d_{{{index + 1}}}\| = {document_norm:.6f}"
+                    )
+                    st.latex(
+                        rf"\operatorname{{score}}(q,d_{{{index + 1}}}) "
+                        rf"= \frac{{{dot_product:.6f}}}"
+                        rf"{{{query_norm:.6f} \times {document_norm:.6f}}} "
+                        rf"= {calculated_score:.6f}"
+                    )
+
+                    st.caption(
+                        f"Displayed result score: {similarity_scores[index]:.6f}. "
+                        f"The two values agree up to floating-point rounding."
+                    )
 
 
             # ---------------- BAR CHART ----------------
@@ -612,6 +1021,7 @@ if section == "Quiz":
             st.radio(
                 "Select your answer:",
                 question["options"],
+                index=None,
                 key=f"quiz_{i}"
             )
 

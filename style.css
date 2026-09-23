@@ -19,6 +19,7 @@
     --muted: #6f7478;
     --navy: #233746;
     --brass: #ad7b35;
+    --terracotta: #b85c43;
 
     --paper: #fffdfa;
     --canvas: #f5f5f3;
@@ -40,11 +41,11 @@ body,
 }
 
 body {
-    background: var(--canvas);
+    background: linear-gradient(135deg, #eef1ef 0%, #f7f1e8 100%);
 }
 
 .stApp {
-    background: var(--canvas);
+    background: linear-gradient(135deg, #eef1ef 0%, #f7f1e8 100%);
 }
 
 
@@ -53,8 +54,12 @@ body {
    ========================================================= */
 
 .main .block-container {
-    max-width: 1280px;
-    padding: 2.5rem 2.5rem 5rem;
+    max-width: none;
+    width: 100%;
+    padding: 2.6rem 3.5rem 5rem;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
 }
 
 
@@ -72,22 +77,24 @@ h4 {
 }
 
 h1 {
-    font-size: clamp(2rem, 4vw, 3.1rem) !important;
+    font-size: clamp(2rem, 4vw, 3rem) !important;
     line-height: 1.15 !important;
     margin-bottom: 0.6rem !important;
     max-width: 820px;
+    text-wrap: balance;
 }
 
 h2 {
     font-size: 1.8rem !important;
-    margin-top: 2rem !important;
+    margin-top: 2.4rem !important;
     padding-bottom: 0.65rem;
-    border-bottom: 1px solid var(--brass);
+    border-bottom: 2px solid var(--brass);
 }
 
 h3 {
     font-size: 1.25rem !important;
-    margin-top: 1.7rem !important;
+    margin-top: 1.9rem !important;
+    color: var(--navy);
 }
 
 p,
@@ -156,12 +163,38 @@ select,
 [data-testid="stSidebar"] {
     background: var(--navy);
     border-right: 1px solid #304a5b;
-    width: 500px;
-    min-width: 300px;
+    width: 290px;
+    min-width: 260px;
+}
+
+[data-testid="stSidebar"] > div,
+[data-testid="stSidebar"] section,
+[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"],
+[data-testid="stSidebar"] [data-testid="stElementContainer"] {
+    background: transparent !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none;
+}
+
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlockBorderWrapper"] {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none;
 }
 
 [data-testid="stSidebar"] > div:first-child {
-    padding: 0.35rem 1rem 1.2rem;
+    padding: 1.6rem 1rem 1.2rem;
 }
 
 
@@ -189,6 +222,8 @@ select,
     font-size: 1.2rem !important;
     line-height: 1.35;
     margin-top: 0 !important;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(248, 245, 238, 0.22);
 }
 
 
@@ -219,7 +254,7 @@ select,
     align-items: center;
 
     font-family: "Libre Baskerville", serif;
-    font-size: 1rem;
+    font-size: 0.92rem;
 
     padding: 0.72rem 0.9rem !important;
 
@@ -232,6 +267,11 @@ select,
         border-color 160ms ease;
 }
 
+[data-testid="stSidebar"] [role="radiogroup"] label p {
+    margin: 0;
+    color: #f8f5ee !important;
+}
+
 
 /* =========================================================
    REMOVE STREAMLIT RADIO CIRCLE
@@ -240,21 +280,21 @@ select,
 /* Hide radio input */
 
 [data-testid="stSidebar"] input[type="radio"] {
-    display: none !important;
+    accent-color: var(--brass) !important;
 }
 
 
 /* Hide BaseWeb radio circle */
 
 [data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child {
-    display: none !important;
+    display: flex;
 }
 
 
 /* Hide any nested radio indicator */
 
 [data-testid="stSidebar"] [data-baseweb="radio"] > div > div:first-child {
-    display: none !important;
+    display: flex;
 }
 
 
@@ -264,8 +304,7 @@ select,
 [data-testid="stSidebar"] [data-baseweb="radio"]::after,
 [data-testid="stSidebar"] [role="radio"]::before,
 [data-testid="stSidebar"] [role="radio"]::after {
-    display: none !important;
-    content: none !important;
+    content: none;
 }
 
 
@@ -289,6 +328,10 @@ select,
     color: #fffdfa !important;
 }
 
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) p {
+    font-weight: 700;
+}
+
 
 /* Selected item's text */
 
@@ -310,6 +353,19 @@ select,
     background: var(--paper);
     box-shadow: var(--shadow);
     margin-bottom: 1.1rem;
+}
+
+[data-testid="stExpander"] {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--brass);
+    border-radius: 4px;
+    background: rgba(255, 253, 250, 0.78);
+    box-shadow: 0 4px 14px rgba(35, 55, 70, 0.04);
+}
+
+[data-testid="stExpander"] summary p {
+    color: var(--navy);
+    font-weight: 700;
 }
 
 
@@ -388,6 +444,10 @@ button[kind="primary"]:active,
     background: var(--paper);
     color: var(--ink);
     min-height: 2.8rem;
+}
+
+[data-testid="stTextInput"] input::placeholder {
+    color: #8a8c89;
 }
 
 
@@ -597,6 +657,14 @@ strong {
     padding: 0.15rem 0.35rem;
 }
 
+/* Keep rendered mathematical notation readable on the light workspace. */
+.katex,
+.katex-display,
+.katex span,
+.katex-display span {
+    color: var(--navy) !important;
+}
+
 
 /* =========================================================
    RESPONSIVE DESIGN
@@ -621,37 +689,19 @@ strong {
    FINAL RADIO CIRCLE REMOVAL
    ========================================================= */
 
-/* Hide Streamlit radio indicator elements */
-[data-testid="stSidebar"] [data-baseweb="radio"] svg {
-    display: none !important;
-}
-
-[data-testid="stSidebar"] [data-baseweb="radio"] span {
-    display: none !important;
-}
-
-/* Hide the radio indicator container */
-[data-testid="stSidebar"] [data-baseweb="radio"] > div {
-    display: none !important;
-}
-
-/* Keep the navigation text visible */
+/* Keep the navigation item and its text visible */
 [data-testid="stSidebar"] [data-baseweb="radio"] {
-    display: block !important;
+    display: flex !important;
+    align-items: center;
 }
 
 /* Remove any remaining radio visuals */
 [data-testid="stSidebar"] [role="radio"] {
-    -webkit-appearance: none !important;
-    appearance: none !important;
     background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
 }
 
 /* Remove pseudo-elements from radio controls */
 [data-testid="stSidebar"] [role="radio"]::before,
 [data-testid="stSidebar"] [role="radio"]::after {
-    display: none !important;
-    content: none !important;
+    content: none;
 }
